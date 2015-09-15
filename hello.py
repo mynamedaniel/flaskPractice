@@ -1,42 +1,32 @@
 #/usr/bin/env python
 
-from flask import Flask, request, redirect, make_response, abort
+from flask import Flask, render_template
 from flask.ext.script import Manager
+from flask.ext.bootstrap import Bootstrap
+from flask.ext.moment import Moment
+from datetime import datetime
 
 app = Flask(__name__)
 manager = Manager(app)
+bootstrap = Bootstrap(app)
+moment = Moment(app)
 
 
 @app.route('/')
 def index():
-	return "<h1>Hello, Flask!</h1>"
-
-@app.route('/response')
-def testResponse():
-	res = make_response('<h1>Hello, this is a response object</h1>')
-	res.set_cookie('test', 'opps')
-	return res
-
-'''@app.route('/abort/<id>')
-def testAbort(id):
-	user = load_user(id)
-	if not user:
-		abort(404)
-	return '<h1>No error. %s' % user.name'''
-
-@app.route('/redirect')
-def testRedirect():
-	return redirect('http://localhost:5000/browser')
+	return render_template('index.html', current_time=datetime.utcnow())
 
 @app.route('/user/<name>')
 def user(name):
-	return "<h1>Hello, %s!</h1>\
-	<a href='/'>Home</a>" % name
+	return render_template('user.html', name = name)
 
-@app.route('/browser')
-def browser():
-	user_agent = request.headers.get('User-Agent')
-	return '<p>Your browser is %s</p>' % user_agent
+@app.errorhandler(404)
+def page_not_found(e):
+	return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+	return render_template('500.html'),500
 
 if __name__ == '__main__':
 	manager.run()
